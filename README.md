@@ -5,6 +5,8 @@ This repo has a few tutorial videos that will you get up and running quickly
 1) https://youtu.be/_9MbgyUvDGs - This will walk you through how to set up the project without Docker
 
 ### Local Development Setup
+1. Clone this repo `git clone git@github.com:bobby-didcoding/did_django_schedule_jobs_v2.git`
+2. Create your .env file from the template file `cp .env.template backend/.env`
 
 ### Install Redis for Celery
 1. Install 'Ubuntu' and set up Redis (https://www.youtube.com/watch?v=_nFwPTHOMIY)
