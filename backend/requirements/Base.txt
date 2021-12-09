@@ -12,6 +12,7 @@ Django==3.2.9
 django-celery-beat==2.2.1
 django-celery-results==2.2.0
 django-timezone-field==4.2.1
+flower==1.0.0
 kombu==5.2.2
 prompt-toolkit==3.0.23
 python-crontab==2.6.0
