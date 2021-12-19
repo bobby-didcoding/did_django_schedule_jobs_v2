@@ -13,4 +13,7 @@ RUN pip install --upgrade pip
 RUN pip install -r /code/requirements/Base.txt
 
 RUN chmod +x /code/entrypoint.sh
+RUN mkdir /code/logs
+RUN touch /code/logs/celery.log
+RUN chmod +x /code/logs/celery.log
 ENTRYPOINT ["/code/entrypoint.sh"]

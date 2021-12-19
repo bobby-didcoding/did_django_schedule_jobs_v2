@@ -38,10 +38,10 @@ INSTALLED_APPS = [
 ]
 
 #Celery, Celery Beat and Redis settings
-CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", "redis://redis:6379")
-CELERY_RESULT_BACKEND = os.environ.get("CELERY_BACKEND", "redis://redis:6379")
-if CELERY_RESULT_BACKEND == 'django-db':
-    INSTALLED_APPS += ['django_celery_results',]
+CELERY_BROKER_URL = 'redis://host.docker.internal:6379'
+CELERY_RESULT_BACKEND = 'redis://host.docker.internal:6379'
+
+INSTALLED_APPS += ['django_celery_results',]
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'

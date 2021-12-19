@@ -38,7 +38,6 @@ services:
     build:
       context: ./backend
     command: celery -A did_django_schedule_jobs_v2 worker --loglevel=info --logfile=logs/celery.log
-    ports: []
     volumes:
       - ./backend:/usr/src/backend
     env_file:
@@ -65,7 +64,7 @@ services:
   flower:
     build:
       context: ./backend
-    command: celery flower did_django_schedule_jobs_v2 --broker=redis://redis:6379 --port=5555
+    command: celery -A did_django_schedule_jobs_v2 flower  --broker=redis://host.docker.internal:6379//
     ports:
       - 5555:5555
     env_file:
