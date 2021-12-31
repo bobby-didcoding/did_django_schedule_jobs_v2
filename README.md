@@ -31,3 +31,14 @@ This repo has a few tutorial videos that will you get up and running quickly
 16. Run `python manage.py runserver`
 
 
+### Local Development Setup with Docker
+1. Clone from docker branch `git clone --branch docker git@github.com:bobby-didcoding/did_django_schedule_jobs_v2.git`
+2. Create an env file `cp .env.template .env`
+3. Update the DONOT_REPLY_EMAIL and GOOGLE_APP_PASSOWRD variables in the new .env file
+4. `cd backend && mkdir logs && cd logs && echo This is our celery log > celery.log && cd ../..`
+5. Install Docker & Docker compose
+6. Compose a docker image `docker-compose -f docker-compose.yml up -d --build`
+
+# Note: You may get an issue if your github config is not set up for LF. Add these settings to config
+1. git config --global core.autocrlf input
+2. git config --global core.eol lf
