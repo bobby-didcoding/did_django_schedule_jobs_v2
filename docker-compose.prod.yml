@@ -1,0 +1,130 @@
+version: '3'
+
+services:
+  
+  db:
+    image: postgres:13.0-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - ./.env.prod.db
+    container_name: did_django_schedule_jobs_v2_db_prod
+    networks:
+      - main_prod
+
+  
+  app:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    restart: always
+    command: gunicorn did_django_schedule_jobs_v2.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - static_volume:/home/app/web/staticfiles
+      - media_volume:/home/app/web/mediafiles
+    expose:
+      - 8000
+    env_file:
+      - ./.env.prod
+    depends_on:
+      - db
+    networks:
+      - main_prod
+    container_name: did_django_schedule_jobs_v2_django_app_prod
+  
+  
+  redis:
+    image: redis:6-alpine
+    expose:
+      - 6379
+    ports:
+      - "6379:6379"
+    networks:
+      - main_prod
+    container_name: did_django_schedule_jobs_v2_redis_prod
+      
+  
+  celery_worker:
+    restart: always
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    command: celery -A did_django_schedule_jobs_v2 worker --loglevel=info --logfile=logs/celery.log
+    volumes:
+      - ./backend:/home/app/web/
+    networks:
+      - main_prod
+    env_file:
+      - ./.env.prod
+    depends_on:
+      - db
+      - redis
+      - app
+    container_name: did_django_schedule_jobs_v2_celery_worker_prod
+
+  
+  celery-beat:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile.prod
+
+    command: celery -A did_django_schedule_jobs_v2 beat -l info
+    volumes:
+      - ./backend:/home/app/web/
+    networks:
+      - main_prod
+    env_file:
+      - ./.env.prod
+    depends_on:
+      - db
+      - redis
+      - app
+    container_name: did_django_schedule_jobs_v2_celery_beat_prod
+
+  
+  flower:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    command: "celery -A did_django_schedule_jobs_v2 flower  
+            --broker=redis://redis:6379//
+            --env-file=./.env.prod
+            --basic_auth=username:password"
+    ports:
+      - 5555:5555
+    networks:
+      - main_prod
+    env_file:
+      - ./.env.prod
+    depends_on:
+      - db
+      - app
+      - redis
+      - celery_worker
+    container_name: did_django_schedule_jobs_v2_flower_prod
+
+  
+  nginx:
+    container_name: did_django_schedule_jobs_v2_nginx
+    restart: always
+    build: ./nginx
+
+    ports:
+      - "8080:8080"
+    networks:
+      - main_prod
+    volumes:
+      - static_volume:/home/app/web/staticfiles
+      - media_volume:/home/app/web/mediafiles
+    depends_on:
+      - app
+
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:
+
+networks:
+  main_prod:
+    driver: bridge

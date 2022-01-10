@@ -42,3 +42,7 @@ This repo has a few tutorial videos that will you get up and running quickly
 # Note: You may get an issue if your github config is not set up for LF. Add these settings to config
 1. git config --global core.autocrlf input
 2. git config --global core.eol lf
+
+
+### Production Setup with Docker
+1. Follow tutorial at https://didcoding.com/tutorial/production-ready-dockerized-django-application/

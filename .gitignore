@@ -7,7 +7,7 @@ __pycache__/
 
 # C extensions
 *.so
-#/app/logs/celery.log
+/backend/logs
 # Distribution / packaging
 .Python
 build/
