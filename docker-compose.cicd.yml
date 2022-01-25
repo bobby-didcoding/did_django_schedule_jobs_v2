@@ -14,14 +14,19 @@ services:
 
     
     app:
+        build:
+            context: ./backend
+            dockerfile: Dockerfile.prod
+            cache_from:
+            - "${APP_IMAGE}"
         image: "${APP_IMAGE}"
         restart: always
         command: gunicorn did_django_schedule_jobs_v2.wsgi:application --bind 0.0.0.0:8000
         volumes:
             - static_volume:/home/app/web/staticfiles
             - media_volume:/home/app/web/mediafiles
-        ports:
-            - 8000:8000
+        expose:
+            - 8000
         env_file:
             - .env
         depends_on:
@@ -44,6 +49,11 @@ services:
     
     celery_worker:
         restart: always
+        build:
+            context: ./backend
+            dockerfile: Dockerfile.prod
+            cache_from:
+            - "${CELERY_IMAGE}"
         image: "${CELERY_IMAGE}"
         command: celery -A did_django_schedule_jobs_v2 worker --loglevel=info --logfile=logs/celery.log
         volumes:
@@ -60,6 +70,11 @@ services:
 
     
     celery-beat:
+        build: 
+            context: ./backend
+            dockerfile: Dockerfile.prod
+            cache_from:
+            - "${BEAT_IMAGE}"
         image: "${BEAT_IMAGE}"
 
         command: celery -A did_django_schedule_jobs_v2 beat -l info
@@ -75,12 +90,17 @@ services:
             - app
         container_name: did_django_schedule_jobs_v2_celery_beat_prod
 
-
+    
     flower:
+        build:
+            context: ./backend
+            dockerfile: Dockerfile.prod
+            cache_from:
+            - "${FLOWER_IMAGE}"
         image: "${FLOWER_IMAGE}"
         command: "celery -A did_django_schedule_jobs_v2 flower  
                 --broker=redis://redis:6379//
-                --env-file=..env
+                --env-file=.env
                 --basic_auth=bobby:password"
         ports:
             - 5555:5555
@@ -98,6 +118,10 @@ services:
     nginx:
         container_name: did_django_schedule_jobs_v2_nginx_prod
         restart: always
+        build:
+            context: ./nginx
+            cache_from:
+            - "${NGINX_IMAGE}"
         image: "${NGINX_IMAGE}"
         ports:
             - "8080:8080"

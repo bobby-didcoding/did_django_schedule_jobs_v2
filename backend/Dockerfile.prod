@@ -1,3 +1,4 @@
+
 ###########
 # BUILDER #
 ###########
@@ -35,6 +36,8 @@ ENV HOME=/home/app
 ENV APP_HOME=/home/app/web
 RUN mkdir $APP_HOME
 RUN mkdir $APP_HOME/static
+RUN mkdir $APP_HOME/media
+RUN mkdir $APP_HOME/logs
 WORKDIR $APP_HOME
 
 # install dependencies
@@ -47,6 +50,10 @@ RUN pip install --no-cache /wheels/*
 
 # copy entrypoint-prod.sh
 COPY ./entrypoint.prod.sh $APP_HOME
+
+# copy celery logs
+RUN touch /home/app/web/logs/celery.log
+RUN chmod +x /home/app/web/logs/celery.log
 
 # copy project
 COPY . $APP_HOME

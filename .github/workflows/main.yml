@@ -1,0 +1,64 @@
+
+name: Continuous Integration and Delivery
+on: [push]
+
+env:
+    APP_IMAGE: ghcr.io/$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')/app
+    CELERY_IMAGE: ghcr.io/$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')/celery
+    BEAT_IMAGE: ghcr.io/$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')/beat
+    FLOWER_IMAGE: ghcr.io/$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')/flower
+    NGINX_IMAGE: ghcr.io/$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')/nginx
+
+jobs:
+
+    build:
+        name: Build Docker Images
+        runs-on: ubuntu-latest
+        steps:
+          - name: Checkout master
+            uses: actions/checkout@v1
+          - name: Add environment variables to .env
+            run: |
+              echo DEBUG=0 >> .env
+              echo PRODUCTION=1 >> .env
+              echo SQL_ENGINE=django.db.backends.postgresql_psycopg2 >> .env
+              echo DATABASE=postgres >> .env
+              echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
+              echo SQL_DATABASE=${{ secrets.SQL_DATABASE }} >> .env
+              echo SQL_USER=${{ secrets.SQL_USER }} >> .env
+              echo SQL_PASSWORD=${{ secrets.SQL_PASSWORD }} >> .env
+              echo SQL_HOST=${{ secrets.SQL_HOST }} >> .env
+              echo SQL_PORT=${{ secrets.SQL_PORT }} >> .env
+              echo DONOT_REPLY_EMAIL=${{ secrets.DONOT_REPLY_EMAIL }} >> .env
+              echo GOOGLE_APP_PASSWORD=${{ secrets.GOOGLE_APP_PASSWORD }} >> .env
+              echo DJANGO_ALLOWED_HOSTS=${{ secrets.DJANGO_ALLOWED_HOSTS }} >> .env
+          - name: Set environment variables
+            run: |
+              echo "APP_IMAGE=$(echo ${{env.APP_IMAGE}} )" >> $GITHUB_ENV
+              echo "CELERY_IMAGE=$(echo ${{env.CELERY_IMAGE}} )" >> $GITHUB_ENV
+              echo "BEAT_IMAGE=$(echo ${{env.BEAT_IMAGE}} )" >> $GITHUB_ENV
+              echo "FLOWER_IMAGE=$(echo ${{env.FLOWER_IMAGE}} )" >> $GITHUB_ENV
+              echo "NGINX_IMAGE=$(echo ${{env.NGINX_IMAGE}} )" >> $GITHUB_ENV
+          - name: Log in to GitHub Packages
+            run: echo ${PERSONAL_ACCESS_TOKEN} | docker login ghcr.io -u ${{ secrets.NAMESPACE }} --password-stdin
+            env:
+              PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          - name: Pull images
+            run: |
+              docker pull ${{ env.APP_IMAGE }} || true
+              docker pull ${{ env.CELERY_IMAGE }} || true
+              docker pull ${{ env.BEAT_IMAGE }} || true
+              docker pull ${{ env.FLOWER_IMAGE }} || true
+              docker pull ${{ env.NGINX_IMAGE }} || true
+          - name: Build images
+            run: |
+              docker-compose -f docker-compose.cicd.yml build
+          - name: Push images
+            run: |
+              docker push ${{ env.APP_IMAGE }}
+              docker push ${{ env.CELERY_IMAGE }}
+              docker push ${{ env.BEAT_IMAGE }}
+              docker push ${{ env.FLOWER_IMAGE }}
+              docker push ${{ env.NGINX_IMAGE }}
+
+
