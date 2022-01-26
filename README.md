@@ -46,3 +46,6 @@ This repo has a few tutorial videos that will you get up and running quickly
 
 ### Production Setup with Docker
 1. Follow tutorial at https://didcoding.com/tutorial/production-ready-dockerized-django-application/
+
+### Production Setup with Docker and CICD
+1. Follow tutorial at https://didcoding.com/tutorial/continuous-delivery-for-django/
